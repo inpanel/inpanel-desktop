@@ -1,2 +1,3 @@
 # inpanel-desktop
-the Desktop Application for InPanel
+
+the Desktop Client for InPanel
