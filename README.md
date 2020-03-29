@@ -4,13 +4,14 @@ the Desktop Client for InPanel
 
 to build:
 
-```shell
 on Mac OSX
+
+```shell
 pyinstaller -D -w -y --noconfirm inpanel.py
 ```
 
 or
 
 ```shell
-pyinstaller -D -w -y --noconfirm inpanel.py
+pyinstaller -D -w -y --noconfirm inpanel.spec
 ```
