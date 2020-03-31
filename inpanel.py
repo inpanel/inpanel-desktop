@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
+"""程序入口文件"""
 
+from os.path import dirname
 
-# import tkinter as tk
-from tkinter import Tk, Label, BOTH
-from lib import set_window_center
+import lib.global_variable as g
+from frames import App
+# from window import WinSplah
 
-window = Tk()
-window.title('InPanel Desktop')
+# 全局变量
+g.init_global_variable()
+g.set_variable("APP_NAME", "InPanel")
+g.set_variable("APP_PATH", dirname(__file__))  # 当前目录
+g.set_variable("DATA_DIR", "data")
 
-label = Label(window, text="Hello, World")
-label.pack(fill=BOTH, expand=1)
-
-set_window_center(window, 800, 500)
-
-window.mainloop()
+if __name__ == "__main__":
+    # WinSplah()
+    App()
