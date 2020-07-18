@@ -5,7 +5,7 @@ from tkinter import Label, Message, Toplevel
 
 from frames import (AboutFrame, ContentAdd, ContentList, CountFrame, HomeFrame,
                     UserAddFrame, UserListFrame)
-from lib.functions import set_window_center
+from utils.functions import set_window_center
 from menu import MainMenu
 from window import WinAbout
 

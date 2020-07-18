@@ -4,8 +4,8 @@
 import tkinter.messagebox
 from tkinter import Button, Label, Tk
 
-from lib.functions import set_window_center
-from lib.sqlite_helper import DBHelper
+from utils.functions import set_window_center
+from utils.sqlite_helper import DBHelper
 from inpanel import App
 
 

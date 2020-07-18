@@ -1,151 +1,127 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-from tkinter import Menu, StringVar, Tk, messagebox, scrolledtext
-from tkinter.ttk import (Button, Entry, Frame, Label, LabelFrame, Scrollbar,
-                         Treeview)
+from tkinter import (Button, Entry, Frame, Label, LabelFrame, Menu, Message,
+                     Scrollbar, StringVar, Tk, Toplevel, messagebox,
+                     scrolledtext)
+# from tkinter.ttk import Frame as tFrame
+from tkinter.ttk import LabelFrame, Scrollbar, Style, Treeview, Notebook
 
-import lib.dbcontent as dbcontent
-from lib import global_variable
-from lib.functions import set_window_center, treeview_sort_column
-from menu import MainMenu
+import utils
+import utils.dbcontent as dbcontent
+from utils import global_variable
+from utils.functions import set_window_center, treeview_sort_column
 from window import (WinAbout, WinContentEdit, WinContentInfo, WinUserEdit,
                     WinUserInfo)
 
 
 class App(Tk):
-    """Application Class"""
+    """App"""
 
     def __init__(self):
         Tk.__init__(self)
-        # WinSplah()
-        # 登录窗口
-        Login(self)
+        if not self.is_login():
+            # 登录窗口
+            ViewMain(self)
+            # PageLogin(self)
+        else:
+            ViewMain(self)
+
+        self.win_about = None
         self.mainloop()
 
-class Login():
-    """登录"""
+    def do_quit(self):
+        """退出主程序"""
+        self.quit()
 
-    def __init__(self, master=None):
-        if self.isLoggedIn() is True:
-            MainPage(master)
+    def is_login(self):
+        """是否已登陆"""
+        return global_variable.has_item("CURRENT_USER_NAME")
+
+    def do_logout(self):
+        """退出登陆"""
+        return global_variable.remove("CURRENT_USER_NAME")
+
+    def set_to_top(self):
+        """窗口置顶"""
+        self.attributes("-topmost", True)
+
+    def set_not_top(self):
+        """窗口置顶取消"""
+        self.attributes("-topmost", False)
+
+    def open_about(self):
+        """打开关于窗口"""
+        if self.win_about and self.win_about.destroy:
+            try:
+                self.win_about.lift()
+            except:
+                self.win_about.destroy()
+                self.win_about = WinAbout()
         else:
-            self.root = master
-            master.title("账号登陆")
-            set_window_center(self.root, 300, 180)
-            self.root.resizable(False, False)
-            # 定义变量
-            self.username = StringVar()
-            self.password = StringVar()
-            self.init_menu()
-            self.init_page()
+            self.win_about = WinAbout()
 
-    def init_page(self):
-        """登录界面"""
 
-        self.page = Frame(self.root)  # 创建Frame
-        self.page.pack()
-
-        Label(self.page).grid(row=0, stick="W")
-
-        Label(self.page, text="账户: ").grid(row=1, stick="W", pady=10)
-        username = Entry(self.page, textvariable=self.username)
-        username.grid(row=1, column=1, stick="E")
-        username.bind("<Return>", self.returnEnvent)
-
-        Label(self.page, text="密码: ").grid(row=2, stick="W", pady=10)
-        password = Entry(self.page, textvariable=self.password, show="*")
-        password.grid(row=2, column=1, stick="E")
-        password.bind("<Return>", self.returnEnvent)
-
-        button_login = Button(self.page, text="登陆", command=self.doLogin)
-        button_login.grid(row=3, column=1, stick="W", pady=10)
-
-        button_cancel = Button(self.page, text="退出", command=self.doCancel)
-        button_cancel.grid(row=3, column=1, stick="e")
-
-    def init_menu(self):
-        """创建菜单栏"""
-        menubar = Menu(self.root)
-        filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label="退出", command=self.root.quit)
-        menubar.add_cascade(label="文件", menu=filemenu)
-        self.root.config(menu=menubar)
-
-    def doLogin(self):
-        username = self.username.get()
-        password = self.password.get()
-        res = dbcontent.user_login(username, password)
-        if res is True:
-            # if username == "admin" and password == "admin": # 测试账号
-            self.page.destroy()
-
-            global_variable.set_variable("CURRENT_USER_NAME", str(username))
-            MainPage(self.root)
-        else:
-            messagebox.showinfo(title="错误", message="账号或密码错误！")
-
-    def doCancel(self):
-        self.page.quit()
-
-    def returnEnvent(self, event):
-        self.doLogin()
-
-    def isLoggedIn(self):
-        # return True
-        return False
-
-class MainPage():
+class ViewMain():
     """主界面"""
 
-    def __init__(self, master=None):
-        self.root = master  # 主窗口
-        set_window_center(self.root, 800, 600)
-        self.root.resizable(True, True)
-        MainMenu(self)  # 使用self可以传递主窗口和主窗口操作函数
+    def __init__(self, parent=None):
+        set_window_center(parent, 900, 600, resize=True)
         # 初始化Frames
-        self.current_frame = None
-        self.page_frame = {
-            "home": HomeFrame,
+        self.root = parent  # 主窗口
+        ViewMenu(self)  # 使用self可以传递主窗口和主窗口操作函数
+        self.page_sidebar = ViewSidebar(self)
+        self.page_current = None
+        self.pages = {
+            "login": PageLogin,
+            "home": PageHome,
+            "settings": PageSettings,
+            "contact": PageContact,
             "content_add": ContentAdd,
             "content_list": ContentList,
             "count": CountFrame,
-            "contact": AboutFrame,
             "user_list": UserListFrame,
             "user_add": UserAddFrame
         }
-        self.open_home()
-        self.win_about = None
+        self.open_page("home")
 
-    def open_page(self, frame_name, title):
+    def open_page(self, frame_name):
         """打开/更换主界面的通用函数"""
-        self.root.title(title)
         # 先销毁之前frame
-        if self.current_frame is not None and (hasattr(self.current_frame.destroy, '__call__')):
-            self.current_frame.destroy()
+        if self.page_current is not None and (hasattr(self.page_current.destroy, "__call__")):
+            self.page_current.destroy()
 
-        self.current_frame = self.page_frame[frame_name](self.root)
-        self.current_frame.pack()
+        self.page_current = self.pages[frame_name](self.root)
+        self.page_current.pack(side="left", fill="both", anchor="center")
 
     def open_home(self):
         """应用主界面"""
-        self.open_page("home", "应用主界面")
+        self.open_page("home")
+
+    def open_login(self):
+        """登录界面"""
+        self.root.do_logout()
+        self.open_page("login")
+
+    def open_settings(self):
+        """服务管理"""
+        self.open_page("settings")
 
     def open_content_add(self):
         """文章添加"""
-        self.open_page("content_add", "文章添加")
+        self.open_page("content_add")
 
     def open_content_list(self):
         """文章列表"""
-        self.open_page("content_list", "文章查询")
+        self.open_page("content_list")
 
     def open_content_count(self):
         """文章统计"""
-        self.open_page("count", "文章统计")
+        self.open_page("count")
 
     def open_ontact(self):
         """联系我们"""
-        self.open_page("contact", "联系我们")
+        self.open_page("contact")
 
     def open_user_info(self):
         """用户详情"""
@@ -168,7 +144,7 @@ class MainPage():
     def open_user_list(self):
         """用户列表"""
         self.open_page("user_list", "用户列表")
-        # self.page_frame['user_list'].init_data()
+        # self.pages["user_list"].init_data()
 
     def open_user_add(self):
         """用户添加"""
@@ -214,25 +190,278 @@ class MainPage():
         msg = Message(root, text="类似于弹出窗口，具有独立的窗口属性。", width=150)
         msg.pack()
 
-    def open_about(self):
-        """关于窗口"""
-        if self.win_about and self.win_about.destroy:
-            self.win_about.destroy()
-        self.win_about = WinAbout()
 
-    def window_to_top(self):
-        """窗口置顶"""
-        self.root.attributes('-topmost', True)
+class ViewMenu:
+    """主界面菜单"""
 
-    def window_not_top(self):
-        """窗口置顶"""
-        self.root.attributes('-topmost', False)
+    def __init__(self, parent):
+        """初始化菜单"""
+        self.parent = parent  # 上级
+        self.root = parent.root  # 主窗口
+        self.init_menu()
+
+    def init_menu(self):
+        """加载菜单"""
+
+        # 创建菜单栏
+        self.menubar = Menu(self.root)
+
+        # 将菜单栏添加到窗口
+        self.root.config(menu=self.menubar)
+
+        # 文件下拉菜单
+        filemenu = Menu(self.menubar, tearoff=0)
+        filemenu.add_command(label="新建", command=self.file_new)
+        filemenu.add_command(label="打开", command=self.file_open)
+        filemenu.add_command(label="保存", command=self.file_save)
+        filemenu.add_command(label="另存为", command=self.file_save)
+        filemenu.add_separator()
+
+        filemenu.add_command(label="重新登录", command=self.parent.open_login)
+        filemenu.add_command(label="退出", command=self.root.do_quit)
+
+        # 用户下拉菜单
+        usermenu = Menu(self.menubar, tearoff=0)
+        usermenu.add_command(label="用户列表", command=self.parent.open_user_list)
+        usermenu.add_command(label="用户添加", command=self.parent.open_user_add)
+        usermenu.add_command(
+            label="用户详情窗口", command=self.parent.open_user_info)
+
+        # 文章下拉菜单
+        articlemenu = Menu(self.menubar, tearoff=0)
+        articlemenu.add_command(
+            label="文章查询", command=self.parent.open_content_list)
+        articlemenu.add_command(
+            label="文章添加", command=self.parent.open_content_add)
+        articlemenu.add_command(
+            label="文章统计", command=self.parent.open_content_count)
+
+        # 数据下拉菜单
+        datamenu = Menu(self.menubar, tearoff=0)
+        datamenu.add_command(label="下载", command=self.parent.open_download)
+        datamenu.add_command(label="上传", command=self.parent.open_upload)
+        datamenu.add_command(label="同步", command=self.parent.open_synchronize)
+        datamenu.add_command(label="备份", command=self.parent.open_backup)
+
+        # 窗口下拉菜单
+        window_menu = Menu(self.menubar)
+        window_menu.add_command(label="最大化")
+        window_menu.add_command(label="最小化")
+        window_menu.add_separator()
+        window_menu.add_command(label="窗口置顶", command=self.root.set_to_top)
+        window_menu.add_command(label="取消置顶", command=self.root.set_not_top)
+        window_menu.add_separator()
+        window_menu.add_command(label="主界面", command=self.parent.open_home)
+        window_menu.add_command(label="切换到: 用户")
+        window_menu.add_command(label="切换到: 文章列表")
+
+        # 帮助下拉菜单
+        helpmenu = Menu(self.menubar, tearoff=0)
+        helpmenu.add_command(label="欢迎使用", command=self.help_about)
+        helpmenu.add_command(label="文档", command=self.help_about)
+        helpmenu.add_command(label="版权声明", command=self.help_about)
+        helpmenu.add_command(label="隐私声明", command=self.help_about)
+        helpmenu.add_separator()
+        helpmenu.add_command(label="联系我们", command=self.parent.open_ontact)
+        helpmenu.add_command(label="关于", command=self.root.open_about)
+
+        # 将下拉菜单加到菜单栏
+        self.menubar.add_cascade(label="文件", menu=filemenu)
+        self.menubar.add_cascade(label="用户", menu=usermenu)
+        self.menubar.add_cascade(label="文章", menu=articlemenu)
+        self.menubar.add_cascade(label="数据", menu=datamenu)
+        self.menubar.add_cascade(label="窗口", menu=window_menu)
+        self.menubar.add_cascade(label="帮助", menu=helpmenu)
+
+    def file_open(self):
+        messagebox.showinfo("打开", "文件-打开！")  # 消息提示框
+
+    def file_new(self):
+        messagebox.showinfo("新建", "文件-新建！")  # 消息提示框
+
+    def file_save(self):
+        messagebox.showinfo("保存", "文件-保存！")  # 消息提示框
+
+    def edit_cut(self):
+        messagebox.showinfo("剪切", "编辑-剪切！")  # 消息提示框
+
+    def edit_copy(self):
+        messagebox.showinfo("复制", "编辑-复制！")  # 消息提示框
+
+    def edit_paste(self):
+        messagebox.showinfo("粘贴", "编辑-粘贴！")  # 消息提示框
+
+    def help_about(self):
+        """关于"""
+        messagebox.showinfo(
+            "关于", "作者: doudoudzj \n verion 1.0 \n 感谢您的使用！ \n doudoudzj@sina.com"
+        )
 
 
-class HomeFrame(Frame):  # 继承Frame类
+class ViewSidebar:
+    """导航菜单界面"""
+
+    def __init__(self, parent=None):
+        # Frame.__init__(self, parent)
+        # self.root = parent  # 定义内部变量root
+        self.parent = parent  # 上级
+        self.root = parent.root  # 主窗口
+        self.background = "#00b75b"
+        self.activebackground = "#147b3d"
+        self.init_sidebar()
+
+    def init_sidebar(self):
+        self.parent.page_sidebar = Frame(self.root, bg=self.background)
+
+        Label(self.parent.page_sidebar, text="InPanel", width=15, height=3,
+              padx=20, background="#279e56", foreground="blue").pack(side="top")
+
+        nav = ("主界面", "服务管理", "文件管理", "数据库", "插件", "工具箱", "设置")
+        self.navs = []
+        for item in nav:
+            i = Label(self.parent.page_sidebar, text=item, width=15, height=3, padx=20)
+            i['bg'] = self.background
+            i['fg'] = "#ffffff"
+            i.pack()
+            self.navs.append(i)
+            # self.navs[index].bind('<Enter>', lambda event:self.nav_enter(index))
+            # self.navs[index].bind('<Leave>', lambda event:self.nav_leave(index))
+        self.navs[0].bind('<Enter>', lambda event: self.nav_enter(0))
+        self.navs[0].bind('<Leave>', lambda event: self.nav_leave(0))
+        self.navs[0].bind('<Button-1>', lambda event: self.parent.open_home())
+        self.navs[1].bind('<Enter>', lambda event: self.nav_enter(1))
+        self.navs[1].bind('<Leave>', lambda event: self.nav_leave(1))
+        self.navs[1].bind(
+            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[2].bind('<Enter>', lambda event: self.nav_enter(2))
+        self.navs[2].bind('<Leave>', lambda event: self.nav_leave(2))
+        self.navs[3].bind(
+            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[3].bind('<Enter>', lambda event: self.nav_enter(3))
+        self.navs[3].bind('<Leave>', lambda event: self.nav_leave(3))
+        self.navs[1].bind(
+            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[4].bind('<Enter>', lambda event: self.nav_enter(4))
+        self.navs[4].bind('<Leave>', lambda event: self.nav_leave(4))
+        self.navs[1].bind(
+            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[5].bind('<Enter>', lambda event: self.nav_enter(5))
+        self.navs[5].bind('<Leave>', lambda event: self.nav_leave(5))
+        self.navs[1].bind(
+            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[6].bind('<Enter>', lambda event: self.nav_enter(6))
+        self.navs[6].bind('<Leave>', lambda event: self.nav_leave(6))
+        self.navs[6].bind(
+            '<Button-1>', lambda event: self.parent.open_settings())
+        self.navs[6].pack(side="bottom")
+        self.parent.page_sidebar.pack(side="left", fill="y", anchor="center")
+
+    def nav_enter(self, i):
+        self.navs[i]['bg'] = self.activebackground
+
+    def nav_leave(self, i):
+        self.navs[i]['bg'] = self.background
+
+
+class PageLogin:
+    """登录界面"""
+
+    def __init__(self, parent=None):
+        parent.title("登陆")
+        set_window_center(parent, 300, 200)
+        # 定义当前本地变量
+        self.root = parent
+        self.username = StringVar(value="")
+        self.password = StringVar(value="")
+        self.init_menu()
+        self.init_page()
+
+    def init_page(self):
+        """登录界面"""
+        # 左侧空白
+        # self.blank_top = Label(self.root)
+        # self.blank_top.pack(side="top", fill="both", expand="yes")
+        # # 左侧空白
+        # self.blank_left = Label(self.root)
+        # self.blank_left.pack(side="left", fill="both", expand="yes")
+        # # 右侧空白
+        # self.blank_right = Label(self.root)
+        # self.blank_right.pack(side="right", fill="both", expand="yes")
+        # # 右侧空白
+        # self.blank_bottom = Label(self.root)
+        # self.blank_bottom.pack(side="bottom", fill="both", expand="yes")
+        # 中间功能区域
+        self.page = Frame(self.root, background="#ffffff", width=100)
+        self.page.pack(side="top", fill="both", anchor="center", expand="yes")
+        # 头部空白
+        Label(self.page).grid(row=0, column=0, sticky="ew")
+        # 账户
+        Label(self.page, text="账户: ").grid(row=1, column=1, stick="W", pady=10)
+        username = Entry(self.page, textvariable=self.username)
+        username.grid(row=1, column=2, stick="E")
+        username.bind("<Return>", self.return_envent)
+        # 密码
+        Label(self.page, text="密码: ").grid(row=2, column=1, stick="W", pady=10)
+        password = Entry(self.page, textvariable=self.password, show="*")
+        password.grid(row=2, column=2, stick="E")
+        password.bind("<Return>", self.return_envent)
+        # 登陆按钮
+        button_login = Button(self.page, text="登陆",
+                              command=self.do_login, background="#ffffff")
+        button_login.grid(row=3, column=2, stick="W", pady=10)
+        # 退出按钮
+        button_cancel = Button(self.page, text="退出",
+                               command=self.root.do_quit, background="#ffffff")
+        button_cancel.grid(row=3, column=2, stick="e")
+
+    def init_menu(self):
+        """创建菜单栏"""
+        bar = Menu(self.root)
+        filemenu = Menu(bar, tearoff=0)
+        filemenu.add_command(label="关于", command=self.root.open_about)
+        filemenu.add_separator()
+        filemenu.add_command(label="退出", command=self.root.do_quit)
+
+        bar.add_cascade(label="更多", menu=filemenu)
+        self.root.config(menu=bar)
+
+    def do_login(self):
+        username = self.username.get()
+        if not username:
+            messagebox.showinfo(title="错误", message="账号不能为空！")
+            return
+        password = self.password.get()
+        if not password:
+            messagebox.showinfo(title="错误", message="密码不能为空！")
+            return
+
+        res = dbcontent.user_login(username, password)
+        if not res:
+            messagebox.showinfo(title="错误", message="账号或密码错误！")
+        else:
+            global_variable.set_item("CURRENT_USER_NAME", str(username))
+            self.do_app()
+            # if username == "admin" and password == "admin": # 测试账号
+
+    def return_envent(self, event):
+        self.do_login()
+
+    def do_app(self):
+        # 清理登录界面
+        self.page.destroy()
+        # self.blank_top.destroy()
+        # self.blank_left.destroy()
+        # self.blank_right.destroy()
+        # self.blank_bottom.destroy()
+        # 加载应用主界面
+        ViewMain(self.root)
+
+
+class PageHome(Frame):  # 继承Frame类
     """应用主界面"""
 
     def __init__(self, parent=None):
+        parent.title("主界面")
         Frame.__init__(self, parent)
         self.root = parent  # 定义内部变量root
         self.init_page()
@@ -242,7 +471,7 @@ class HomeFrame(Frame):  # 继承Frame类
         Label(self, text="用户:").pack()
 
         Label(self, text="欢迎" +
-              str(global_variable.get_variable("CURRENT_USER_NAME"))).pack()
+              str(global_variable.get_item("CURRENT_USER_NAME"))).pack()
         Button(self, text="查看").pack()
 
 
@@ -251,6 +480,7 @@ class ContentAdd(Frame):
 
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
+        parent.title("文章添加")
         self.root = parent  # 定义内部变量root
         self.content_title = StringVar()
         self.content_textarea = None
@@ -295,7 +525,7 @@ class ContentAdd(Frame):
         title = self.content_title.get()
         content = self.content_textarea.get(0.0, "end")
         tag = self.content_tag.get()
-        username = str(global_variable.get_variable("CURRENT_USER_NAME"))
+        username = str(global_variable.get_item("CURRENT_USER_NAME"))
         res = dbcontent.content_add(username, title, content, tag)
         if res is True:
             self.content_title.set("")
@@ -311,6 +541,7 @@ class ContentList(Frame):
     """文章列表"""
 
     def __init__(self, parent=None):
+        parent.title("文章列表")
         Frame.__init__(self, parent)
         self.root = parent
         self.list = []
@@ -323,7 +554,7 @@ class ContentList(Frame):
     def init_page(self):
         """加载控件"""
 
-        username = str(global_variable.get_variable("CURRENT_USER_NAME"))
+        username = str(global_variable.get_item("CURRENT_USER_NAME"))
         self.list = dbcontent.content_list_by_username(username)
 
         head_frame = LabelFrame(self, text="文章操作")
@@ -376,7 +607,7 @@ class ContentList(Frame):
             )
 
         vbar = Scrollbar(self, orient="vertical",
-                             command=self.tree_view.yview)
+                         command=self.tree_view.yview)
         self.tree_view.configure(yscrollcommand=vbar.set)
         self.tree_view.grid(row=1, column=0, sticky="nsew")
         vbar.grid(row=1, column=1, sticky="ns")
@@ -422,6 +653,7 @@ class CountFrame(Frame):
     """文章统计"""
 
     def __init__(self, parent=None):
+        parent.title("文章统计")
         Frame.__init__(self, parent)
         self.root = parent
         self.init_page()
@@ -431,10 +663,11 @@ class CountFrame(Frame):
         Label(self, text="统计界面").pack()
 
 
-class AboutFrame(Frame):
-    """关于界面"""
+class PageContact(Frame):
+    """联系我们"""
 
     def __init__(self, parent=None):
+        parent.title("联系我们")
         Frame.__init__(self, parent)
         self.root = parent
         self.init_page()
@@ -450,6 +683,7 @@ class UserListFrame(Frame):
     """用户列表界面"""
 
     def __init__(self, parent=None):
+        parent.title("用户列表")
         Frame.__init__(self, parent)
         self.root = parent
         self.list = []
@@ -515,7 +749,7 @@ class UserListFrame(Frame):
             )
 
         vbar = Scrollbar(self, orient="vertical",
-                             command=self.tree_view.yview)
+                         command=self.tree_view.yview)
         self.tree_view.configure(yscrollcommand=vbar.set)
         self.tree_view.grid(row=1, column=0, sticky="nsew")
         vbar.grid(row=1, column=1, sticky="ns")
@@ -566,6 +800,7 @@ class UserAddFrame(Frame):
     """用户添加"""
 
     def __init__(self, parent=None):
+        parent.title("用户添加")
         Frame.__init__(self, parent)
         self.root = parent
         self.username = StringVar()
@@ -574,6 +809,68 @@ class UserAddFrame(Frame):
 
     def init_page(self):
         """加载控件"""
+        Label(self).grid(row=0, stick="w")
+
+        Label(self, text="账户: ").grid(row=1, stick="w", pady=10)
+        username = Entry(self, textvariable=self.username)
+        username.grid(row=1, column=1, stick="e")
+
+        Label(self, text="密码: ").grid(row=2, stick="w", pady=10)
+        password = Entry(self, textvariable=self.password, show="*")
+        password.grid(row=2, column=1, stick="e")
+
+        button_login = Button(self, text="添加", command=self.do_add)
+        button_login.grid(row=3, column=1, stick="w", pady=10)
+
+    def do_add(self):
+        """添加帐号"""
+        # print(event)
+        username = self.username.get()
+        password = self.password.get()
+        res = dbcontent.user_add(username, password)
+        if res is True:
+            self.username.set("")
+            self.password.set("")
+            messagebox.showinfo(title="成功", message="添加成功")
+        else:
+            messagebox.showinfo(title="错误", message="账号已存在")
+
+
+class PageSettings(Notebook):
+    """设置页面"""
+
+    def __init__(self, parent=None):
+        parent.title("InPanel 设置")
+        Notebook.__init__(self, parent)
+        self.root = parent
+        self.username = StringVar()
+        self.password = StringVar()
+        self.init_page()
+        self['padding'] = 30
+        self['background'] = "#333333"
+
+    def init_page(self):
+        """加载控件"""
+        # nb = Notebook(self)
+        authinfo = Frame(self, background="#ffffff")
+        serverinfo = Frame(self, background="#ffffff")
+        accesskey = Frame(self, background="#ffffff")
+        upversion = Frame(self)
+        restart = Frame(self)
+        self.add(authinfo, text='登录设置')
+        self.add(serverinfo,text='服务设置')
+        self.add(accesskey,text='远程控制')
+        self.add(upversion,text='版本升级')
+        self.add(restart,text='重启服务')
+        # elf.page = Frame(self.root, background="#ffffff", width=100)
+        # self.page.pack(side="top", fill="both", anchor="center", expand="yes")
+        self.pack(side="left", fill="both", anchor="center", expand="yes")
+
+        label1=Label(authinfo,text='标签1')
+        label1.pack()
+        button1=Button(authinfo,text='按钮1',width=20)
+        button1.pack()
+
         Label(self).grid(row=0, stick="w")
 
         Label(self, text="账户: ").grid(row=1, stick="w", pady=10)

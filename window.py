@@ -6,9 +6,9 @@ import tkinter as gui
 from tkinter import (Button, Canvas, Entry, Frame, Label, Menu, Message,
                      StringVar, Tk, Toplevel, messagebox)
 
-import lib.dbcontent as dbcontent
-import lib.global_variable as glv
-from lib.functions import set_window_center
+import utils.dbcontent as dbcontent
+import utils.global_variable as glv
+from utils.functions import set_window_center
 
 
 # from PIL import Image, ImageTk
@@ -23,14 +23,14 @@ class WinSplah(Tk):
         self.w = 300
         self.h = 300
         set_window_center(self, self.w, self.h)
-        self.resizable(False, False)
+        # self.resizable(False, False)
         self.splash()
 
     def splash(self):
         """启动屏幕"""
         image_file = os.path.join(
-            glv.get_variable("APP_PATH"),
-            glv.get_variable("DATA_DIR"),
+            glv.get_item("APP_PATH"),
+            glv.get_item("DATA_DIR"),
             "image",
             "splash.jpg",
         )
@@ -153,8 +153,8 @@ class WinAbout(Toplevel):
     def __init__(self):
         Toplevel.__init__(self)
         self.title("")
-        # set_window_center(self, 400, 400)
-        # glv.get_variable("APP_NAME")
+        set_window_center(self, 400, 400)
+        # glv.get_item("APP_NAME")
         self.app_name = "Python Tkinter Application"
         self.app_version = "0.1.1"
         self.app_desc = "简述简述简述简述简述简述"
