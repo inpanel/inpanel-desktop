@@ -68,10 +68,13 @@ class ViewMain():
     def __init__(self, parent=None):
         set_window_center(parent, 900, 600, resize=True)
         # 初始化Frames
-        self.root = parent  # 主窗口
-        ViewMenu(self)  # 使用self可以传递主窗口和主窗口操作函数
-        self.page_sidebar = ViewSidebar(self)
-        self.page_current = None
+        self.root = parent  # 程序主窗口
+        self.menubar = None # 程序菜单
+        self.page_sidebar = None # 主界面导航菜单
+        self.page_current = None # 主界面内容
+
+        self.init_menu()
+        self.init_sidebar()
         self.pages = {
             "login": PageLogin,
             "home": PageHome,
@@ -84,6 +87,16 @@ class ViewMain():
             "user_add": UserAddFrame
         }
         self.open_page("home")
+
+    def init_menu(self):
+        ViewMenu(self)
+        # 将菜单栏添加到窗口
+        self.root.config(menu=self.menubar)
+
+    def init_sidebar(self):
+        """导航菜单界面"""
+        ViewSidebar(self)
+        self.page_sidebar.pack(side="left", fill="y", anchor="center")
 
     def open_page(self, frame_name):
         """打开/更换主界面的通用函数"""
@@ -100,6 +113,8 @@ class ViewMain():
 
     def open_login(self):
         """登录界面"""
+        self.page_sidebar.destroy()
+        self.page_current.destroy()
         self.root.do_logout()
         self.open_page("login")
 
@@ -192,56 +207,55 @@ class ViewMain():
 
 
 class ViewMenu:
-    """主界面菜单"""
+    """程序菜单"""
 
     def __init__(self, parent):
-        """初始化菜单"""
+        """初始化"""
         self.parent = parent  # 上级
-        self.root = parent.root  # 主窗口
-        self.init_menu()
+        self.root = parent.root  # 主程序
+        self.init()
 
-    def init_menu(self):
-        """加载菜单"""
-
-        # 创建菜单栏
+    def init(self):
+        """创建菜单栏"""
         self.menubar = Menu(self.root)
 
-        # 将菜单栏添加到窗口
-        self.root.config(menu=self.menubar)
-
         # 文件下拉菜单
-        filemenu = Menu(self.menubar, tearoff=0)
-        filemenu.add_command(label="新建", command=self.file_new)
-        filemenu.add_command(label="打开", command=self.file_open)
-        filemenu.add_command(label="保存", command=self.file_save)
-        filemenu.add_command(label="另存为", command=self.file_save)
-        filemenu.add_separator()
+        m_file = Menu(self.menubar, tearoff=0)
+        m_file.add_command(label="新建", command=self.file_new)
+        m_file.add_command(label="打开", command=self.file_open)
+        m_file.add_command(label="保存", command=self.file_save)
+        m_file.add_command(label="另存为", command=self.file_save)
+        m_file.add_separator()
+        m_file.add_command(label="回收站", command=self.file_save)
+        m_file.add_command(label="重新登录", command=self.parent.open_login)
+        m_file.add_command(label="退出", command=self.root.do_quit)
 
-        filemenu.add_command(label="重新登录", command=self.parent.open_login)
-        filemenu.add_command(label="退出", command=self.root.do_quit)
+        # 功能菜单
+        m_section = Menu(self.menubar, tearoff=0)
+        m_section.add_command(label="文件管理", command=self.parent.open_user_list)
+        m_section.add_command(label="服务管理", command=self.parent.open_user_add)
+        m_section.add_command(label="网站管理", command=self.parent.open_user_info)
+        m_section.add_command(label="数据库", command=self.parent.open_user_info)
+        m_section.add_command(label="应用", command=self.parent.open_user_info)
 
-        # 用户下拉菜单
-        usermenu = Menu(self.menubar, tearoff=0)
-        usermenu.add_command(label="用户列表", command=self.parent.open_user_list)
-        usermenu.add_command(label="用户添加", command=self.parent.open_user_add)
-        usermenu.add_command(
-            label="用户详情窗口", command=self.parent.open_user_info)
+        # 工具菜单
+        m_utils = Menu(self.menubar, tearoff=0)
+        m_utils.add_command(label="基础设置", command=self.parent.open_content_list)
+        m_utils.add_command(label="系统管理", command=self.parent.open_content_add)
+        m_utils.add_command(label="系统安全", command=self.parent.open_content_count)
+        m_utils.add_command(label="磁盘存储", command=self.parent.open_content_count)
+        m_utils.add_command(label="磁盘存储", command=self.parent.open_content_count)
+        m_utils.add_separator()
+        m_utils.add_command(label="重启服务器", command=self.parent.open_content_count)
 
-        # 文章下拉菜单
-        articlemenu = Menu(self.menubar, tearoff=0)
-        articlemenu.add_command(
-            label="文章查询", command=self.parent.open_content_list)
-        articlemenu.add_command(
-            label="文章添加", command=self.parent.open_content_add)
-        articlemenu.add_command(
-            label="文章统计", command=self.parent.open_content_count)
-
-        # 数据下拉菜单
-        datamenu = Menu(self.menubar, tearoff=0)
-        datamenu.add_command(label="下载", command=self.parent.open_download)
-        datamenu.add_command(label="上传", command=self.parent.open_upload)
-        datamenu.add_command(label="同步", command=self.parent.open_synchronize)
-        datamenu.add_command(label="备份", command=self.parent.open_backup)
+        # 设置下拉菜单
+        m_config = Menu(self.menubar, tearoff=0)
+        m_config.add_command(label="登录设置", command=self.parent.open_download)
+        m_config.add_command(label="服务设置", command=self.parent.open_upload)
+        m_config.add_command(label="远程控制", command=self.parent.open_synchronize)
+        m_config.add_command(label="版本升级", command=self.parent.open_backup)
+        m_config.add_separator()
+        m_config.add_command(label="本地配置", command=self.parent.open_backup)
 
         # 窗口下拉菜单
         window_menu = Menu(self.menubar)
@@ -266,12 +280,15 @@ class ViewMenu:
         helpmenu.add_command(label="关于", command=self.root.open_about)
 
         # 将下拉菜单加到菜单栏
-        self.menubar.add_cascade(label="文件", menu=filemenu)
-        self.menubar.add_cascade(label="用户", menu=usermenu)
-        self.menubar.add_cascade(label="文章", menu=articlemenu)
-        self.menubar.add_cascade(label="数据", menu=datamenu)
+        self.menubar.add_cascade(label="文件", menu=m_file)
+        self.menubar.add_cascade(label="功能", menu=m_section)
+        self.menubar.add_cascade(label="工具", menu=m_utils)
+        self.menubar.add_cascade(label="设置", menu=m_config)
         self.menubar.add_cascade(label="窗口", menu=window_menu)
         self.menubar.add_cascade(label="帮助", menu=helpmenu)
+
+        # 变量传递回去
+        self.parent.menubar = self.menubar
 
     def file_open(self):
         messagebox.showinfo("打开", "文件-打开！")  # 消息提示框
@@ -299,28 +316,26 @@ class ViewMenu:
 
 
 class ViewSidebar:
-    """导航菜单界面"""
+    """主界面导航菜单"""
 
     def __init__(self, parent=None):
-        # Frame.__init__(self, parent)
-        # self.root = parent  # 定义内部变量root
-        self.parent = parent  # 上级
-        self.root = parent.root  # 主窗口
-        self.background = "#00b75b"
-        self.activebackground = "#147b3d"
-        self.init_sidebar()
+        self.parent = parent
+        self.root = parent.root
+        self.bg = "#00b75b"
+        self.bga = "#147b3d"
+        self.init()
 
-    def init_sidebar(self):
-        self.parent.page_sidebar = Frame(self.root, bg=self.background)
+    def init(self):
+        self.parent.page_sidebar = Frame(self.root, bg=self.bg)
 
         Label(self.parent.page_sidebar, text="InPanel", width=15, height=3,
-              padx=20, background="#279e56", foreground="blue").pack(side="top")
+              padx=20, bg="#279e56", foreground="blue").pack(side="top")
 
-        nav = ("主界面", "服务管理", "文件管理", "数据库", "插件", "工具箱", "设置")
+        nav = ("主界面", "服务管理", "文件管理", "数据库", "插件", "工具", "设置")
         self.navs = []
         for item in nav:
             i = Label(self.parent.page_sidebar, text=item, width=15, height=3, padx=20)
-            i['bg'] = self.background
+            i['bg'] = self.bg
             i['fg'] = "#ffffff"
             i.pack()
             self.navs.append(i)
@@ -331,36 +346,29 @@ class ViewSidebar:
         self.navs[0].bind('<Button-1>', lambda event: self.parent.open_home())
         self.navs[1].bind('<Enter>', lambda event: self.nav_enter(1))
         self.navs[1].bind('<Leave>', lambda event: self.nav_leave(1))
-        self.navs[1].bind(
-            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
         self.navs[2].bind('<Enter>', lambda event: self.nav_enter(2))
         self.navs[2].bind('<Leave>', lambda event: self.nav_leave(2))
-        self.navs[3].bind(
-            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[3].bind('<Button-1>', lambda event: self.parent.open_ontact())
         self.navs[3].bind('<Enter>', lambda event: self.nav_enter(3))
         self.navs[3].bind('<Leave>', lambda event: self.nav_leave(3))
-        self.navs[1].bind(
-            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
         self.navs[4].bind('<Enter>', lambda event: self.nav_enter(4))
         self.navs[4].bind('<Leave>', lambda event: self.nav_leave(4))
-        self.navs[1].bind(
-            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
         self.navs[5].bind('<Enter>', lambda event: self.nav_enter(5))
         self.navs[5].bind('<Leave>', lambda event: self.nav_leave(5))
-        self.navs[1].bind(
-            '<Button-1>', lambda event: self.parent.open_ontact())
+        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
         self.navs[6].bind('<Enter>', lambda event: self.nav_enter(6))
         self.navs[6].bind('<Leave>', lambda event: self.nav_leave(6))
-        self.navs[6].bind(
-            '<Button-1>', lambda event: self.parent.open_settings())
+        self.navs[6].bind('<Button-1>', lambda event: self.parent.open_settings())
         self.navs[6].pack(side="bottom")
-        self.parent.page_sidebar.pack(side="left", fill="y", anchor="center")
 
     def nav_enter(self, i):
-        self.navs[i]['bg'] = self.activebackground
+        self.navs[i]['bg'] = self.bga
 
     def nav_leave(self, i):
-        self.navs[i]['bg'] = self.background
+        self.navs[i]['bg'] = self.bg
 
 
 class PageLogin:
@@ -417,12 +425,12 @@ class PageLogin:
     def init_menu(self):
         """创建菜单栏"""
         bar = Menu(self.root)
-        filemenu = Menu(bar, tearoff=0)
-        filemenu.add_command(label="关于", command=self.root.open_about)
-        filemenu.add_separator()
-        filemenu.add_command(label="退出", command=self.root.do_quit)
+        menu = Menu(bar, tearoff=0)
+        menu.add_command(label="关于", command=self.root.open_about)
+        menu.add_separator()
+        menu.add_command(label="退出", command=self.root.do_quit)
 
-        bar.add_cascade(label="更多", menu=filemenu)
+        bar.add_cascade(label="操作", menu=menu)
         self.root.config(menu=bar)
 
     def do_login(self):
@@ -836,66 +844,66 @@ class UserAddFrame(Frame):
             messagebox.showinfo(title="错误", message="账号已存在")
 
 
-class PageSettings(Notebook):
+class PageSettings(Frame):
     """设置页面"""
 
     def __init__(self, parent=None):
         parent.title("InPanel 设置")
-        Notebook.__init__(self, parent)
+        Frame.__init__(self, parent)
         self.root = parent
         self.username = StringVar()
         self.password = StringVar()
         self.init_page()
-        self['padding'] = 30
-        self['background'] = "#333333"
+        # self['padding'] = 30
+        # self['background'] = "#333333"
 
     def init_page(self):
         """加载控件"""
-        # nb = Notebook(self)
-        authinfo = Frame(self, background="#ffffff")
-        serverinfo = Frame(self, background="#ffffff")
-        accesskey = Frame(self, background="#ffffff")
-        upversion = Frame(self)
-        restart = Frame(self)
-        self.add(authinfo, text='登录设置')
-        self.add(serverinfo,text='服务设置')
-        self.add(accesskey,text='远程控制')
-        self.add(upversion,text='版本升级')
-        self.add(restart,text='重启服务')
+        nb = Notebook(self)
+        authinfo = Frame(nb, background="#ffffff")
+        serverinfo = Frame(nb, background="#ffffff")
+        accesskey = Frame(nb, background="#ffffff")
+        upversion = Frame(nb)
+        restart = Frame(nb)
+        nb.add(authinfo, text='登录设置')
+        nb.add(serverinfo,text='服务设置')
+        nb.add(accesskey,text='远程控制')
+        nb.add(upversion,text='版本升级')
+        nb.add(restart,text='重启服务')
         # elf.page = Frame(self.root, background="#ffffff", width=100)
         # self.page.pack(side="top", fill="both", anchor="center", expand="yes")
-        self.pack(side="left", fill="both", anchor="center", expand="yes")
+        nb.pack(side="left", fill="both", anchor="center", expand="yes")
 
         label1=Label(authinfo,text='标签1')
         label1.pack()
         button1=Button(authinfo,text='按钮1',width=20)
         button1.pack()
 
-        Label(self).grid(row=0, stick="w")
+    #     Label(authinfo).grid(row=0, stick="w")
 
-        Label(self, text="账户: ").grid(row=1, stick="w", pady=10)
-        username = Entry(self, textvariable=self.username)
-        username.grid(row=1, column=1, stick="e")
+    #     Label(authinfo, text="账户: ").grid(row=1, stick="w", pady=10)
+    #     username = Entry(authinfo, textvariable=self.username)
+    #     username.grid(row=1, column=1, stick="e")
 
-        Label(self, text="密码: ").grid(row=2, stick="w", pady=10)
-        password = Entry(self, textvariable=self.password, show="*")
-        password.grid(row=2, column=1, stick="e")
+    #     Label(authinfo, text="密码: ").grid(row=2, stick="w", pady=10)
+    #     password = Entry(authinfo, textvariable=self.password, show="*")
+    #     password.grid(row=2, column=1, stick="e")
 
-        button_login = Button(self, text="添加", command=self.do_add)
-        button_login.grid(row=3, column=1, stick="w", pady=10)
+    #     button_login = Button(authinfo, text="添加", command=self.do_add)
+    #     button_login.grid(row=3, column=1, stick="w", pady=10)
 
-    def do_add(self):
-        """添加帐号"""
-        # print(event)
-        username = self.username.get()
-        password = self.password.get()
-        res = dbcontent.user_add(username, password)
-        if res is True:
-            self.username.set("")
-            self.password.set("")
-            messagebox.showinfo(title="成功", message="添加成功")
-        else:
-            messagebox.showinfo(title="错误", message="账号已存在")
+    # def do_add(self):
+    #     """添加帐号"""
+    #     # print(event)
+    #     username = self.username.get()
+    #     password = self.password.get()
+    #     res = dbcontent.user_add(username, password)
+    #     if res is True:
+    #         self.username.set("")
+    #         self.password.set("")
+    #         messagebox.showinfo(title="成功", message="添加成功")
+    #     else:
+    #         messagebox.showinfo(title="错误", message="账号已存在")
 
 
 if __name__ == "__main__":
