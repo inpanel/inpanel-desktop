@@ -62,7 +62,7 @@ class App(Tk):
             self.win_about = WinAbout()
 
 
-class ViewMain():
+class ViewMain:
     """主界面"""
 
     def __init__(self, parent=None):
@@ -331,54 +331,40 @@ class ViewSidebar:
         Label(self.parent.page_sidebar, text="InPanel", width=15, height=3,
               padx=20, bg="#279e56", foreground="blue").pack(side="top")
 
+        # 可以使用管理每个视图的参数
+        # self.parent.pages[0].title
+        # self.parent.pages[0].page
+        # self.parent.pages[0].open
         nav = ("主界面", "服务管理", "文件管理", "数据库", "插件", "工具", "设置")
         self.navs = []
         for index, item in enumerate(nav):
             i = Label(self.parent.page_sidebar, text=item, width=15, height=3, padx=20)
-            i['bg'] = self.bg
-            i['fg'] = "#ffffff"
+            i["bg"] = self.bg
+            i["fg"] = "#ffffff"
             if index == 6:
                 i.pack(side="bottom")
             else:
                 i.pack()
             self.navs.append(i)
             self.bind_mouse(i)
-        # self.navs[0].bind('<Enter>', lambda event: self.nav_enter(0))
-        # self.navs[0].bind('<Leave>', lambda event: self.nav_leave(0))
-        # self.navs[1].bind('<Enter>', lambda event: self.nav_enter(1))
-        # self.navs[1].bind('<Leave>', lambda event: self.nav_leave(1))
-        # self.navs[2].bind('<Enter>', lambda event: self.nav_enter(2))
-        # self.navs[2].bind('<Leave>', lambda event: self.nav_leave(2))
-        # self.navs[3].bind('<Enter>', lambda event: self.nav_enter(3))
-        # self.navs[3].bind('<Leave>', lambda event: self.nav_leave(3))
-        # self.navs[4].bind('<Enter>', lambda event: self.nav_enter(4))
-        # self.navs[4].bind('<Leave>', lambda event: self.nav_leave(4))
-        # self.navs[5].bind('<Enter>', lambda event: self.nav_enter(5))
-        # self.navs[5].bind('<Leave>', lambda event: self.nav_leave(5))
-        # self.navs[6].bind('<Enter>', lambda event: self.nav_enter(6))
-        # self.navs[6].bind('<Leave>', lambda event: self.nav_leave(6))
-        self.navs[0].bind('<Button-1>', lambda event: self.parent.open_home())
-        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[3].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[6].bind('<Button-1>', lambda event: self.parent.open_settings())
-        # self.navs[6].pack(side="bottom")
-
-    # def nav_enter(self, i):
-    #     self.navs[i]['bg'] = self.bga
-
-    # def nav_leave(self, i):
-    #     self.navs[i]['bg'] = self.bg
+        self.navs[0].bind("<Button-1>", lambda event: self.parent.open_home())
+        self.navs[1].bind("<Button-1>", lambda event: self.parent.open_ontact())
+        self.navs[3].bind("<Button-1>", lambda event: self.parent.open_ontact())
+        self.navs[1].bind("<Button-1>", lambda event: self.parent.open_ontact())
+        self.navs[1].bind("<Button-1>", lambda event: self.parent.open_ontact())
+        self.navs[1].bind("<Button-1>", lambda event: self.parent.open_ontact())
+        self.navs[6].bind("<Button-1>", lambda event: self.parent.open_settings())
 
     def bind_mouse(self, widget):
         def enter(event):
-            widget['bg'] = self.bga
+            widget["bg"] = self.bga
         def leave(event):
-            widget['bg'] = self.bg
-        widget.bind('<Enter>', enter)
-        widget.bind('<Leave>', leave)
+            widget["bg"] = self.bg
+        # def click(event):
+        #     widget.open_page()
+        widget.bind("<Enter>", enter)
+        widget.bind("<Leave>", leave)
+        # widget.bind("<Button-1>", click)
 
 
 class PageLogin:
@@ -864,8 +850,8 @@ class PageSettings(Frame):
         self.username = StringVar()
         self.password = StringVar()
         self.init_page()
-        # self['padding'] = 30
-        # self['background'] = "#333333"
+        # self["padding"] = 30
+        # self["background"] = "#333333"
 
     def init_page(self):
         """加载控件"""
@@ -875,18 +861,18 @@ class PageSettings(Frame):
         accesskey = Frame(nb, background="#ffffff")
         upversion = Frame(nb)
         restart = Frame(nb)
-        nb.add(authinfo, text='登录设置')
-        nb.add(serverinfo,text='服务设置')
-        nb.add(accesskey,text='远程控制')
-        nb.add(upversion,text='版本升级')
-        nb.add(restart,text='重启服务')
+        nb.add(authinfo, text="登录设置")
+        nb.add(serverinfo,text="服务设置")
+        nb.add(accesskey,text="远程控制")
+        nb.add(upversion,text="版本升级")
+        nb.add(restart,text="重启服务")
         # elf.page = Frame(self.root, background="#ffffff", width=100)
         # self.page.pack(side="top", fill="both", anchor="center", expand="yes")
         nb.pack(side="left", fill="both", anchor="center", expand="yes")
 
-        label1=Label(authinfo,text='标签1')
+        label1=Label(authinfo,text="标签1")
         label1.pack()
-        button1=Button(authinfo,text='按钮1',width=20)
+        button1=Button(authinfo,text="按钮1",width=20)
         button1.pack()
 
     #     Label(authinfo).grid(row=0, stick="w")
