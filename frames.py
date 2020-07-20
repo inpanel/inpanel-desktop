@@ -333,42 +333,52 @@ class ViewSidebar:
 
         nav = ("主界面", "服务管理", "文件管理", "数据库", "插件", "工具", "设置")
         self.navs = []
-        for item in nav:
+        for index, item in enumerate(nav):
             i = Label(self.parent.page_sidebar, text=item, width=15, height=3, padx=20)
             i['bg'] = self.bg
             i['fg'] = "#ffffff"
-            i.pack()
+            if index == 6:
+                i.pack(side="bottom")
+            else:
+                i.pack()
             self.navs.append(i)
-            # self.navs[index].bind('<Enter>', lambda event:self.nav_enter(index))
-            # self.navs[index].bind('<Leave>', lambda event:self.nav_leave(index))
-        self.navs[0].bind('<Enter>', lambda event: self.nav_enter(0))
-        self.navs[0].bind('<Leave>', lambda event: self.nav_leave(0))
+            self.bind_mouse(i)
+        # self.navs[0].bind('<Enter>', lambda event: self.nav_enter(0))
+        # self.navs[0].bind('<Leave>', lambda event: self.nav_leave(0))
+        # self.navs[1].bind('<Enter>', lambda event: self.nav_enter(1))
+        # self.navs[1].bind('<Leave>', lambda event: self.nav_leave(1))
+        # self.navs[2].bind('<Enter>', lambda event: self.nav_enter(2))
+        # self.navs[2].bind('<Leave>', lambda event: self.nav_leave(2))
+        # self.navs[3].bind('<Enter>', lambda event: self.nav_enter(3))
+        # self.navs[3].bind('<Leave>', lambda event: self.nav_leave(3))
+        # self.navs[4].bind('<Enter>', lambda event: self.nav_enter(4))
+        # self.navs[4].bind('<Leave>', lambda event: self.nav_leave(4))
+        # self.navs[5].bind('<Enter>', lambda event: self.nav_enter(5))
+        # self.navs[5].bind('<Leave>', lambda event: self.nav_leave(5))
+        # self.navs[6].bind('<Enter>', lambda event: self.nav_enter(6))
+        # self.navs[6].bind('<Leave>', lambda event: self.nav_leave(6))
         self.navs[0].bind('<Button-1>', lambda event: self.parent.open_home())
-        self.navs[1].bind('<Enter>', lambda event: self.nav_enter(1))
-        self.navs[1].bind('<Leave>', lambda event: self.nav_leave(1))
         self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[2].bind('<Enter>', lambda event: self.nav_enter(2))
-        self.navs[2].bind('<Leave>', lambda event: self.nav_leave(2))
         self.navs[3].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[3].bind('<Enter>', lambda event: self.nav_enter(3))
-        self.navs[3].bind('<Leave>', lambda event: self.nav_leave(3))
         self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[4].bind('<Enter>', lambda event: self.nav_enter(4))
-        self.navs[4].bind('<Leave>', lambda event: self.nav_leave(4))
         self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[5].bind('<Enter>', lambda event: self.nav_enter(5))
-        self.navs[5].bind('<Leave>', lambda event: self.nav_leave(5))
         self.navs[1].bind('<Button-1>', lambda event: self.parent.open_ontact())
-        self.navs[6].bind('<Enter>', lambda event: self.nav_enter(6))
-        self.navs[6].bind('<Leave>', lambda event: self.nav_leave(6))
         self.navs[6].bind('<Button-1>', lambda event: self.parent.open_settings())
-        self.navs[6].pack(side="bottom")
+        # self.navs[6].pack(side="bottom")
 
-    def nav_enter(self, i):
-        self.navs[i]['bg'] = self.bga
+    # def nav_enter(self, i):
+    #     self.navs[i]['bg'] = self.bga
 
-    def nav_leave(self, i):
-        self.navs[i]['bg'] = self.bg
+    # def nav_leave(self, i):
+    #     self.navs[i]['bg'] = self.bg
+
+    def bind_mouse(self, widget):
+        def enter(event):
+            widget['bg'] = self.bga
+        def leave(event):
+            widget['bg'] = self.bg
+        widget.bind('<Enter>', enter)
+        widget.bind('<Leave>', leave)
 
 
 class PageLogin:
