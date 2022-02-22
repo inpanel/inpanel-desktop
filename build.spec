@@ -2,11 +2,15 @@
 
 block_cipher = None
 
+datas=[
+    (os.path.join('.', 'data', 'database.db'), 'data'),
+    (os.path.join('.', 'data', 'image', 'logo_about.png'), 'data/image')
+]
 
 a = Analysis(['inpanel.py'],
              pathex=['.'],
              binaries=[],
-             datas=[(os.path.join('.', "data", 'database.db'), 'data')],
+             datas=datas,
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -26,7 +30,11 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False )
+          console=False,
+          disable_windowed_traceback=False,
+          target_arch=None,
+          codesign_identity=None,
+          entitlements_file=None )
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -38,14 +46,14 @@ coll = COLLECT(exe,
 app = BUNDLE(coll,
              name='InPanel.app',
              icon='resources/app.icns',
-             bundle_identifier=None,
+             bundle_identifier='org.inpanel.client.desktop',
             info_plist={
                 'CFBundleName': 'InPanel',
-                'CFBundleDisplayName': 'InPanel',
+                'CFBundleDisplayName': 'InPanel桌面客户端',
                 'CFBundleGetInfoString': "Crogram Inc.",
-                'CFBundleIdentifier': "org.inpanel.desktop",
+                'CFBundleIdentifier': "org.inpanel.client.desktop",
                 'CFBundleVersion': "0.0.1",
                 'CFBundleShortVersionString': "0.0.1",
-                'NSHumanReadableCopyright': "Copyright © 2020, Crogram Inc., All Rights Reserved",
+                'NSHumanReadableCopyright': "Copyright © 2018-2022 Crogram Inc. All Rights Reserved.",
                 'NSHighResolutionCapable': 'True'
             })
