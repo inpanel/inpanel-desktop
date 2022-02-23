@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 from tkinter import (Button, Entry, Frame, Label, LabelFrame, Menu, Message,
                      Scrollbar, StringVar, Tk, Toplevel, messagebox,
@@ -13,10 +13,15 @@ from utils import global_variable
 from utils.functions import set_window_center, treeview_sort_column
 from win import WinContentEdit, WinContentInfo, WinUserEdit, WinUserInfo
 from window.about import WinAbout
+from window.help import WinHelp
 
 
 class App(Tk):
-    """App"""
+    '''
+    App
+
+    应用程序主窗体，所有窗口、组件的根级窗口
+    '''
 
     def __init__(self):
         Tk.__init__(self)
@@ -28,6 +33,7 @@ class App(Tk):
             ViewMain(self)
 
         self.win_about = None
+        self.win_help = None
         self.mainloop()
 
     def do_quit(self):
@@ -56,10 +62,23 @@ class App(Tk):
             try:
                 self.win_about.lift()
             except:
+                # 打开异常：销毁、新建
                 self.win_about.destroy()
-                self.win_about = WinAbout()
+                self.win_about = WinAbout(self)
         else:
-            self.win_about = WinAbout()
+            self.win_about = WinAbout(self)
+
+    def open_win_help(self):
+        """打开帮助窗口"""
+        if self.win_help and self.win_help.destroy:
+            try:
+                self.win_help.lift()
+            except:
+                # 打开异常：销毁、新建
+                self.win_help.destroy()
+                self.win_help = WinHelp(self)
+        else:
+            self.win_help = WinHelp(self)
 
 
 class ViewMain:

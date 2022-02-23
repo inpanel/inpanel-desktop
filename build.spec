@@ -3,12 +3,12 @@
 block_cipher = None
 
 datas=[
-    (os.path.join('.', 'data', 'database.db'), 'data'),
-    (os.path.join('.', 'data', 'image', 'logo_about.png'), 'data/image')
+    (os.path.join('src', 'data', 'database.db'), 'data'),
+    (os.path.join('src', 'data', 'image', 'logo_about.png'), 'data/image')
 ]
 
-a = Analysis(['inpanel.py'],
-             pathex=['.'],
+a = Analysis(['src/inpanel.py'],
+             pathex=['src'],
              binaries=[],
              datas=datas,
              hiddenimports=[],
@@ -34,7 +34,7 @@ exe = EXE(pyz,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
-          entitlements_file=None )
+          entitlements_file=None)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -56,4 +56,11 @@ app = BUNDLE(coll,
                 'CFBundleShortVersionString': "0.0.1",
                 'NSHumanReadableCopyright': "Copyright © 2018-2022 Crogram Inc. All Rights Reserved.",
                 'NSHighResolutionCapable': 'True'
+            },
+            version_plist={
+                'BuildVersion': '10',
+                'CFBundleShortVersionString': "0.0.1",
+                'CFBundleVersion': "100",
+                'ProjectName': 'InPanel',
+                'SourceVersion': "100000000000000"
             })

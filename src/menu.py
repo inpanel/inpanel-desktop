@@ -83,7 +83,7 @@ class AppMenu():
         # m_help.add_command(label="版权声明", command=self.help_about)
         # m_help.add_command(label="隐私声明", command=self.help_about)
         m_help.add_separator()
-        # m_help.add_command(label="联系我们", command=self.app.open_ontact)
+        m_help.add_command(label="帮助信息", command=self.root.open_win_help)
         m_help.add_command(label="关于", command=self.root.open_about)
 
         # 将下拉菜单加到菜单栏
