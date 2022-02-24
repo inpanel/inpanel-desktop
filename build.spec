@@ -56,11 +56,4 @@ app = BUNDLE(coll,
                 'CFBundleShortVersionString': "0.0.1",
                 'NSHumanReadableCopyright': "Copyright © 2018-2022 Crogram Inc. All Rights Reserved.",
                 'NSHighResolutionCapable': 'True'
-            },
-            version_plist={
-                'BuildVersion': '10',
-                'CFBundleShortVersionString': "0.0.1",
-                'CFBundleVersion': "100",
-                'ProjectName': 'InPanel',
-                'SourceVersion': "100000000000000"
             })
