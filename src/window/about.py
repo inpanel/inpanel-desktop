@@ -19,15 +19,18 @@ class WinAbout(Toplevel):
         # 依附主窗体
         self.transient(master)
         # 设置大小位置
-        set_window_center(self, 300, 220)
+        set_window_center(self, 400, 200)
+        self.configure(padx=10, pady=10)
 
         self.img = join(glv.get_item('APP_PATH'), glv.get_item('DATA_DIR'),
                         'image', 'logo_about.png')
-        self.logo = PhotoImage(width=64, height=64, file=self.img)
+        self.logo = PhotoImage(width=128, height=128, file=self.img)
 
-        Label(self, image=self.logo, width=64, height=80).pack()
+        Label(self, image=self.logo, width=150, height=128).pack(side='left')
+
         Label(self,
               text=glv.get_item('APP_DISPLAY_NAME'),
+              height=3,
               font=Font(size=15, weight='bold')).pack()
 
         Label(self,

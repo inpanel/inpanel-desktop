@@ -1,3 +1,4 @@
+mkdir app.iconset
 sips -z 16 16       icon.png --out ./app.iconset/icon_16x16.png
 sips -z 32 32       icon.png --out ./app.iconset/icon_16x16@2x.png
 sips -z 32 32       icon.png --out ./app.iconset/icon_32x32.png
