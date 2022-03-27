@@ -5,7 +5,7 @@ import os.path
 import tkinter as gui
 from tkinter import Canvas, Label, Tk
 
-import utils.global_variable as glv
+import utils.global_variable as gv
 from utils.functions import set_window_center
 
 
@@ -24,8 +24,8 @@ class WinSplah(Tk):
     def splash(self):
         """启动屏幕"""
         image_file = os.path.join(
-            glv.get_item("APP_PATH"),
-            glv.get_item("DATA_DIR"),
+            gv.get("APP_PATH"),
+            gv.get("DATA_DIR"),
             "image",
             "splash.jpg",
         )

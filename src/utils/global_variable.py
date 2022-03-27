@@ -10,7 +10,7 @@ def init():
     GLOBALS_DICT = {}
 
 
-def set_item(name, value):
+def set(name, value):
     """设置变量"""
     try:
         GLOBALS_DICT[name] = value
@@ -19,7 +19,7 @@ def set_item(name, value):
         return False
 
 
-def get_item(name):
+def get(name):
     """获取变量的值"""
     try:
         return GLOBALS_DICT[name]
@@ -27,7 +27,7 @@ def get_item(name):
         return None
 
 
-def has_item(name=None):
+def has(name=None):
     """是否存在变量"""
     return name is not None and hasattr(GLOBALS_DICT, name)
 

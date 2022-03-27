@@ -1,6 +1,5 @@
-# inpanel-desktop
+# InPanel Desktop Client
 
-the Desktop Client for InPanel
 
 to build:
 

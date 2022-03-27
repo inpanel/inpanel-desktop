@@ -3,13 +3,13 @@
 
 import os
 import sqlite3
-import utils.global_variable as glv
+import utils.global_variable as gv
 
 class DBHelper(object):
     """sqlite helper"""
 
     def __init__(self):
-        self.db_path = os.path.join(glv.get_item("APP_PATH"), glv.get_item("DATA_DIR"), 'database.db')
+        self.db_path = os.path.join(gv.get("APP_PATH"), gv.get("DATA_DIR"), 'database.db')
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
 
