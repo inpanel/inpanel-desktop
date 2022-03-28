@@ -1,4 +1,4 @@
-# InPanel Desktop Client
+# InPanel Desktop
 
 
 to build:
